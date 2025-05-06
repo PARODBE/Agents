@@ -211,7 +211,7 @@ elif page == "✅ Validation Summary":
         if st.button("🔎 Evaluate as Scientific Committee"):
             st.session_state["hypothesis_under_review"] = question
             st.session_state["navigation_target"] = "🧪 Committee Review"
-            st.experimental_rerun()
+            st.rerun()
     else:
         st.write(global_score)
         st.success(f"🧠 Final Certainty Score: **{final_score * 100:.1f}%**")
