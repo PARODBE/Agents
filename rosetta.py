@@ -130,87 +130,124 @@ elif page == "✅ Validation Summary":
 
     st.title("🔍 Researcher Agent Validation")
 
-    example_output = "Predicted survival improvement in HER2+ breast cancer when adding pertuzumab."
-    st.markdown(f"### 💬 Agent's Output:\n> *{example_output}*")
+    # Define outputs by agent
+    question = st.session_state.get("selected_question", "What is the best treatment for HER2+ breast cancer?")
+    st.markdown(f"### 📌 Question: *{question}*")
 
-    st.markdown("---")
-    st.subheader("🧪 Validation Scores (simulated)")
+    agent_outputs = {
+        "Treatment agent": "Adding pertuzumab improves pathological complete response in HER2+ breast cancer.",
+        "Prognostic agent": "Patients with HER2+ tumors show improved survival when treated early.",
+        "Diagnosis agent": "HER2+ subtype is confirmed by overexpression of HER2 protein in immunohistochemistry.",
+        "Guidelines agent": "NCCN recommends trastuzumab and pertuzumab for HER2+ breast cancer treatment."
+    }
 
-    # Simulated scores
-    performance_score = round(random.uniform(0.7, 0.95), 2)
-    source_match = round(random.uniform(0.6, 0.95), 2)
-    scientific_support = round(random.uniform(0.5, 0.9), 2)
-    plausibility = round(random.uniform(0.6, 0.95), 2)
-    contradiction_risk = round(random.uniform(0.0, 0.4), 2)
+    # Define which agents are involved
+    if "treatment" in question.lower():
+        active_agents = ["Treatment agent"]
+    elif "prognosis" in question.lower():
+        active_agents = ["Prognostic agent"]
+    elif "diagnosis" in question.lower():
+        active_agents = ["Diagnosis agent"]
+    elif "guideline" in question.lower():
+        active_agents = ["Guidelines agent"]
+    else:
+        active_agents = ["Treatment agent", "Prognostic agent"]  # default case
 
+    # Simulate scores per agent
+    results = {}
+    for agent in active_agents:
+        scores = {
+            "Performance": round(random.uniform(0.75, 0.95), 2),
+            "Source Match": round(random.uniform(0.0, 0.95), 2),
+            "Scientific Support": round(random.uniform(0.0, 0.9), 2),
+            "Plausibility": round(random.uniform(0.5, 1.0), 2),
+            "Contradiction Risk": round(random.uniform(0.0, 0.4), 2)
+        }
+        results[agent] = scores
+
+    # Aggregate global scores
+    global_score = {
+        key: round(sum(agent_scores[key] for agent_scores in results.values()) / len(results), 2)
+        for key in ["Performance", "Source Match", "Scientific Support", "Plausibility", "Contradiction Risk"]
+    }
+
+    # Final certainty score
     final_score = round(
-        0.4 * performance_score +
-        0.2 * source_match +
-        0.15 * scientific_support +
-        0.15 * plausibility +
-        0.1 * (1 - contradiction_risk),
+        0.4 * global_score["Performance"] +
+        0.2 * global_score["Source Match"] +
+        0.15 * global_score["Scientific Support"] +
+        0.15 * global_score["Plausibility"] +
+        0.1 * (1 - global_score["Contradiction Risk"]),
         2
     )
 
-    # Show table
-    st.write({
-        "Performance Score": performance_score,
-        "Source Match Score": source_match,
-        "Scientific Support Score": scientific_support,
-        "Plausibility Score": plausibility,
-        "Contradiction Risk Score": contradiction_risk,
-        "➡️ Final Certainty Score": final_score
-    })
+    # Show agent outputs and individual scores
+    for agent in active_agents:
+        st.markdown(f"#### 🤖 {agent}")
+        st.markdown(f"**Output:** *{agent_outputs.get(agent, 'No output available.')}*")
+        st.write(results[agent])
+
+    st.markdown("---")
+    st.subheader("📊 Aggregated Validation")
+
+    if global_score["Source Match"] == 0 and global_score["Scientific Support"] == 0:
+        st.warning("⚠️ No supporting scientific literature was found for any agent.")
+        st.info("This may indicate a novel hypothesis. Recommend expert committee review.")
+    else:
+        st.write(global_score)
+        st.success(f"🧠 Final Certainty Score: **{final_score * 100:.1f}%**")
+        st.progress(final_score)
 
     with st.expander("ℹ️ How are the scores evaluated?"):
         st.markdown("""
-    ### 🔹 Source Match Score  
-    **Does the literature say something similar?**  
-    - A RAG (Retrieval-Augmented Generation) system retrieves top-k relevant abstracts from biomedical databases like PubMed.  
-    - The agent's output is compared semantically to each abstract.  
-    - **Metric:** Cosine similarity of embeddings (e.g., BioSentVec, SciBERT, SBERT).  
-    - **Score:** Average similarity score over top-k documents, normalized to 0–1.
-    
-    ---
-    
-    ### 🔹 Scientific Support Score  
-    **Are the sources high quality and reliable?**  
-    - For each retrieved source, a biomedical LLM is prompted to assess:  
-      • Study type (e.g., RCT, cohort, review)  
-      • Journal quality and impact  
-      • Sample size (parsed or inferred)  
-      • Citation count (via Semantic Scholar API or CrossRef)  
-      • Recency (based on publication year)  
-    - The LLM produces a support confidence score per abstract.  
-    - **Score:** Weighted average of evidence-level, impact, sample size, citation count, and recency.
-    
-    ---
-    
-    ### 🔹 Plausibility Score  
-    **Does the claim make biomedical sense?**  
-    - Evaluated using a domain-tuned LLM (e.g., BioMedLM, PubMedGPT).  
-    - Prompt example:  
-      *"Is the following medical hypothesis plausible based on current knowledge? Rate from 0 (implausible) to 1 (very plausible): '{claim}'."*  
-    - **Score:** LLM confidence score directly (or derived from likelihood/logits).
-    
-    ---
-    
-    ### 🔹 Contradiction Risk Score  
-    **Is there evidence against the agent’s output?**  
-    - The same RAG-retrieved documents are passed to the LLM or a contradiction classifier.  
-    - Prompt example:  
-      *"Does this abstract contradict the following statement? Answer: supports / contradicts / unrelated."*  
-    - **Score:** Probability of contradiction. Final score is `1 - contradiction_prob`.
-    
-    ---
-    
-    ### 🟢 Performance Score  
-    **How well did the model perform during development?**  
-    - Based on traditional validation data:
-      - Classification → AUC, F1-score, Accuracy  
-      - Regression → RMSE, MAE, R²  
-    - **Score:** Rescaled metric from 0–1 (e.g., AUC of 0.88 → score 0.88)
+### 🔹 Source Match Score  
+**Does the literature say something similar?**  
+- A RAG (Retrieval-Augmented Generation) system retrieves top-k relevant abstracts from biomedical databases like PubMed.  
+- The agent's output is compared semantically to each abstract.  
+- **Metric:** Cosine similarity of embeddings (e.g., BioSentVec, SciBERT, SBERT).  
+- **Score:** Average similarity score over top-k documents, normalized to 0–1.
+
+---
+
+### 🔹 Scientific Support Score  
+**Are the sources high quality and reliable?**  
+- For each retrieved source, a biomedical LLM is prompted to assess:  
+  • Study type (e.g., RCT, cohort, review)  
+  • Journal quality and impact  
+  • Sample size (parsed or inferred)  
+  • Citation count (via Semantic Scholar API or CrossRef)  
+  • Recency (based on publication year)  
+- The LLM produces a support confidence score per abstract.  
+- **Score:** Weighted average of evidence-level, impact, sample size, citation count, and recency.
+
+---
+
+### 🔹 Plausibility Score  
+**Does the claim make biomedical sense?**  
+- Evaluated using a domain-tuned LLM (e.g., BioMedLM, PubMedGPT).  
+- Prompt example:  
+  *"Is the following medical hypothesis plausible based on current knowledge? Rate from 0 (implausible) to 1 (very plausible): '{claim}'."*  
+- **Score:** LLM confidence score directly (or derived from likelihood/logits).
+
+---
+
+### 🔹 Contradiction Risk Score  
+**Is there evidence against the agent’s output?**  
+- The same RAG-retrieved documents are passed to the LLM or a contradiction classifier.  
+- Prompt example:  
+  *"Does this abstract contradict the following statement? Answer: supports / contradicts / unrelated."*  
+- **Score:** Probability of contradiction. Final score is `1 - contradiction_prob`.
+
+---
+
+### 🟢 Performance Score  
+**How well did the model perform during development?**  
+- Based on traditional validation data:
+  - Classification → AUC, F1-score, Accuracy  
+  - Regression → RMSE, MAE, R²  
+- **Score:** Rescaled metric from 0–1 (e.g., AUC of 0.88 → score 0.88)
         """)
+
 
     st.progress(final_score)
     st.success(f"🧠 Final Certainty Score: **{final_score * 100:.1f}%**")
