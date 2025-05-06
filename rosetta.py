@@ -24,7 +24,7 @@ if page == "🧠 Agent Graph":
     G.add_node("Question-classifier agent", layer=1)
     G.add_edge("Rosetta Agent", "Question-classifier agent")
 
-    functional_agents = ["Diagnosis agent", "Treatment agent", "Prognostic agent", "Guidelines agent"]
+    functional_agents = ["Diagnosis agent", "Treatment agent", "Prognostic agent", "Guidelines agent", "Genomic agent"]
     researcher_agents = [f"{a.split()[0]} Researcher agent" for a in functional_agents]
 
     for agent, researcher in zip(functional_agents, researcher_agents):
@@ -33,12 +33,12 @@ if page == "🧠 Agent Graph":
         G.add_edge("Question-classifier agent", agent)
         G.add_edge(agent, researcher)
 
-    G.add_node("Multi-researcher agent", layer=4)
+    G.add_node("Multi-researcher agent", layer=5)
     for researcher in researcher_agents:
         G.add_edge(researcher, "Multi-researcher agent")
 
     G.add_node("Protocol agent", layer=5)
-    G.add_node("Graph-researcher agent", layer=5)
+    G.add_node("Graph-researcher agent", layer=6)
     G.add_edge("Multi-researcher agent", "Protocol agent")
     G.add_edge("Multi-researcher agent", "Graph-researcher agent")
 
@@ -102,6 +102,8 @@ if page == "🧠 Agent Graph":
             active.update(["Prognostic agent", "Prognostic Researcher agent"])
         if "guideline" in question.lower():
             active.update(["Guidelines agent", "Guidelines Researcher agent"])
+        if "genomic" in question.lower():
+            active.update(["Genomic agent", "Genomic Researcher agent"])
         if "protocol" in question.lower():
             active.update(["Multi-researcher agent", "Protocol agent"])
         if "hypothesis" in question.lower() or "graph" in question.lower():
@@ -139,6 +141,7 @@ elif page == "✅ Validation Summary":
         "Prognostic agent": "Patients with HER2+ tumors show improved survival when treated early.",
         "Diagnosis agent": "HER2+ subtype is confirmed by overexpression of HER2 protein in immunohistochemistry.",
         "Guidelines agent": "NCCN recommends trastuzumab and pertuzumab for HER2+ breast cancer treatment."
+        "Genomic agent": "HER2+ breast cancer is characterized by ERBB2 gene amplification, leading to HER2 protein overexpression."
     }
 
     active_agents = []
@@ -150,6 +153,8 @@ elif page == "✅ Validation Summary":
         active_agents.append("Diagnosis agent")
     if "guideline" in question.lower():
         active_agents.append("Guidelines agent")
+    if "genomic" in question.lower():
+        active_agents.append("Genomic agent")
     if not active_agents:
         active_agents = ["Treatment agent", "Prognostic agent"]  # default
 
