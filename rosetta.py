@@ -166,47 +166,51 @@ elif page == "✅ Validation Summary":
         st.markdown("""
     ### 🔹 Source Match Score  
     **Does the literature say something similar?**  
-    - Retrieved using a RAG (Retrieval-Augmented Generation) system over PubMed or similar.
-    - The agent's output is compared to top-k retrieved abstracts.
-    - **Metric:** Cosine similarity of embeddings (e.g., using BioSentVec, SBERT).
-    - **Score:** Average similarity over top-k results (normalized 0–1).
+    - A RAG (Retrieval-Augmented Generation) system retrieves top-k relevant abstracts from biomedical databases like PubMed.  
+    - The agent's output is compared semantically to each abstract.  
+    - **Metric:** Cosine similarity of embeddings (e.g., BioSentVec, SciBERT, SBERT).  
+    - **Score:** Average similarity score over top-k documents, normalized to 0–1.
     
     ---
     
     ### 🔹 Scientific Support Score  
-    **Are the sources high quality?**  
-    - Each retrieved source is assessed for type and reliability:
-      - RCT: 1.0  
-      - Systematic review: 0.9  
-      - Peer-reviewed article: 0.8  
-      - Preprint: 0.5  
-    - **Score:** Weighted average based on evidence types found in matching documents.
+    **Are the sources high quality and reliable?**  
+    - For each retrieved source, a biomedical LLM is prompted to assess:  
+      • Study type (e.g., RCT, cohort, review)  
+      • Journal quality and impact  
+      • Sample size (parsed or inferred)  
+      • Citation count (via Semantic Scholar API or CrossRef)  
+      • Recency (based on publication year)  
+    - The LLM produces a support confidence score per abstract.  
+    - **Score:** Weighted average of evidence-level, impact, sample size, citation count, and recency.
     
     ---
     
     ### 🔹 Plausibility Score  
     **Does the claim make biomedical sense?**  
-    - The statement is analyzed by a biomedical LLM (e.g., PubMedGPT, BioMedLM).
-    - Prompt: *“Is this hypothesis medically plausible? Answer YES/NO and explain.”*
-    - **Score:** Confidence value from the model's output (converted to a 0–1 score).
+    - Evaluated using a domain-tuned LLM (e.g., BioMedLM, PubMedGPT).  
+    - Prompt example:  
+      *"Is the following medical hypothesis plausible based on current knowledge? Rate from 0 (implausible) to 1 (very plausible): '{claim}'."*  
+    - **Score:** LLM confidence score directly (or derived from likelihood/logits).
     
     ---
     
     ### 🔹 Contradiction Risk Score  
-    **Is there scientific evidence contradicting the claim?**  
-    - The same RAG pipeline checks for conflicting findings.
-    - Uses contradiction detection models (like Natural Language Inference - NLI).
-    - **Score:** Inverse of contradiction probability. High contradiction = lower score.
+    **Is there evidence against the agent’s output?**  
+    - The same RAG-retrieved documents are passed to the LLM or a contradiction classifier.  
+    - Prompt example:  
+      *"Does this abstract contradict the following statement? Answer: supports / contradicts / unrelated."*  
+    - **Score:** Probability of contradiction. Final score is `1 - contradiction_prob`.
     
     ---
     
     ### 🟢 Performance Score  
-    **How well did the model perform on historical validation data?**  
-    - Based on training/validation metrics:
-      - Classification → AUC, F1, Accuracy  
-      - Regression → RMSE, R²
-    - **Score:** Normalized metric (e.g., AUC of 0.85 → score 0.85)
-    """)
+    **How well did the model perform during development?**  
+    - Based on traditional validation data:
+      - Classification → AUC, F1-score, Accuracy  
+      - Regression → RMSE, MAE, R²  
+    - **Score:** Rescaled metric from 0–1 (e.g., AUC of 0.88 → score 0.88)
+        """)
 
     st.progress(final_score)
     st.success(f"🧠 Final Certainty Score: **{final_score * 100:.1f}%**")
