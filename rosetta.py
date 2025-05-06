@@ -8,6 +8,9 @@ import random
 # CONFIGURACIÓN STREAMLIT
 # ----------------------------
 st.set_page_config(page_title="Rosetta Agent System", layout="wide")
+if "navigation_target" in st.session_state:
+    page = st.session_state["navigation_target"]
+    del st.session_state["navigation_target"]
 st.sidebar.title("📂 Navigation")
 page = st.sidebar.radio("Go to", [
     "🧠 Agent Graph",
@@ -286,7 +289,11 @@ elif page == "✅ Validation Summary":
         """)
 
 
-elif page == "🧪 Committee Review":
+elif st.button("🔎 Evaluate as Scientific Committee"):
+    st.session_state["hypothesis_under_review"] = question
+    st.session_state["navigation_target"] = "🧪 Committee Review"
+    st.experimental_rerun()
+    
     st.title("🧪 Scientific Committee Review")
 
     # Recuperar la hipótesis enviada
