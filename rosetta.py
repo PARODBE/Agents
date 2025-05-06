@@ -162,27 +162,51 @@ elif page == "✅ Validation Summary":
         "➡️ Final Certainty Score": final_score
     })
 
-    with st.expander("ℹ️ Explanation of Scores"):
-        st.markdown("""
-- **🔹 Source Match Score**  
-  *Does the literature say something similar?*  
-  ➤ Based on semantic similarity between agent output and abstracts.
+    with st.expander("ℹ️ How are the scores evaluated?"):
+    st.markdown("""
+### 🔹 Source Match Score  
+**Does the literature say something similar?**  
+- Retrieved using a RAG (Retrieval-Augmented Generation) system over PubMed or similar.
+- The agent's output is compared to top-k retrieved abstracts.
+- **Metric:** Cosine similarity of embeddings (e.g., using BioSentVec, SBERT).
+- **Score:** Average similarity over top-k results (normalized 0–1).
 
-- **🔹 Scientific Support Score**  
-  *Are sources high-quality?*  
-  ➤ Weighted by source type (e.g., RCT > review > preprint).
+---
 
-- **🔹 Plausibility Score**  
-  *Does the claim make biomedical sense?*  
-  ➤ Evaluated by a scientific LLM.
+### 🔹 Scientific Support Score  
+**Are the sources high quality?**  
+- Each retrieved source is assessed for type and reliability:
+  - RCT: 1.0  
+  - Systematic review: 0.9  
+  - Peer-reviewed article: 0.8  
+  - Preprint: 0.5  
+- **Score:** Weighted average based on evidence types found in matching documents.
 
-- **🔹 Contradiction Risk Score**  
-  *Is there scientific evidence against this?*  
-  ➤ Checked via semantic contradiction in retrieved papers.
+---
 
-- **🟢 Performance Score**  
-  *How well did the model do on known validation data (e.g., AUC)?*
-        """)
+### 🔹 Plausibility Score  
+**Does the claim make biomedical sense?**  
+- The statement is analyzed by a biomedical LLM (e.g., PubMedGPT, BioMedLM).
+- Prompt: *“Is this hypothesis medically plausible? Answer YES/NO and explain.”*
+- **Score:** Confidence value from the model's output (converted to a 0–1 score).
+
+---
+
+### 🔹 Contradiction Risk Score  
+**Is there scientific evidence contradicting the claim?**  
+- The same RAG pipeline checks for conflicting findings.
+- Uses contradiction detection models (like Natural Language Inference - NLI).
+- **Score:** Inverse of contradiction probability. High contradiction = lower score.
+
+---
+
+### 🟢 Performance Score  
+**How well did the model perform on historical validation data?**  
+- Based on training/validation metrics:
+  - Classification → AUC, F1, Accuracy  
+  - Regression → RMSE, R²
+- **Score:** Normalized metric (e.g., AUC of 0.85 → score 0.85)
+""")
 
     st.progress(final_score)
     st.success(f"🧠 Final Certainty Score: **{final_score * 100:.1f}%**")
