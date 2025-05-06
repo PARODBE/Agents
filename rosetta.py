@@ -1,11 +1,9 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import matplotlib.image as mpimg
 import networkx as nx
-import os
 
-# --- SETUP DEL GRAFO ---
+# --- GRAFO SETUP ---
 
 G = nx.DiGraph()
 G.add_node("Rosetta Agent", layer=0)
@@ -30,7 +28,7 @@ G.add_node("Graph-researcher agent", layer=5)
 G.add_edge("Multi-researcher agent", "Protocol agent")
 G.add_edge("Multi-researcher agent", "Graph-researcher agent")
 
-# --- POSICIONES EN CAPAS ---
+# --- POSICIONES ---
 
 layer_positions = {
     0: ["Rosetta Agent"],
@@ -51,21 +49,11 @@ for layer, nodes in layer_positions.items():
         x = (i - (n - 1) / 2) * x_gap
         pos[node] = (x, y)
 
-# --- ICONOS ---
-icon_paths = {
-    "Diagnosis agent": "xray.png",
-    "Treatment agent": "treatment.png",
-    "Prognostic agent": "survival.png",
-    "Guidelines agent": "guidelines.png",
-    "Protocol agent": "protocol.png",
-    "Graph-researcher agent": "graph.png"
-}
-
 # --- FUNCIONES ---
 
 def draw_graph(active_nodes=None):
     fig, ax = plt.subplots(figsize=(15, 12))
-    ax.set_title("Rosetta Agent System (Layered Layout with Icons)", fontsize=16)
+    ax.set_title("Rosetta Agent System", fontsize=16)
 
     for node in G.nodes():
         x, y = pos[node]
@@ -75,11 +63,7 @@ def draw_graph(active_nodes=None):
         rect = mpatches.FancyBboxPatch((x - width/2, y - height/2), width, height,
                                        boxstyle="round,pad=0.05", ec="black", fc=color)
         ax.add_patch(rect)
-        ax.text(x, y + 0.3, node, ha='center', va='center', fontsize=8)
-
-        if node in icon_paths and os.path.exists(icon_paths[node]):
-            img = mpimg.imread(icon_paths[node])
-            ax.imshow(img, extent=(x - 0.3, x + 0.3, y - 0.3, y + 0.3), zorder=10)
+        ax.text(x, y, node, ha='center', va='center', fontsize=8, wrap=True)
 
     for u, v in G.edges():
         x1, y1 = pos[u]
@@ -112,9 +96,12 @@ def get_active_nodes(question):
 
 # --- INTERFAZ STREAMLIT ---
 
-st.title("Rosetta Agent System")
+st.set_page_config(layout="wide")
+st.title("Rosetta Agent System (No Icons)")
+st.markdown("Visualiza cómo diferentes agentes se activan según la pregunta del usuario.")
+
 question = st.selectbox(
-    "Select a question:",
+    "Selecciona una pregunta:",
     [
         "What is the best treatment for HER2+ breast cancer?",
         "What is the prognosis for stage III colon cancer?",
