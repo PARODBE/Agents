@@ -177,14 +177,26 @@ elif page == "✅ Validation Summary":
 
     # Simulate scores per agent
     results = {}
+    is_discovery_question = "discover novel imaging-genomic signatures" in question.lower()
+    
     for agent in active_agents:
-        scores = {
-            "Performance": round(random.uniform(0.75, 0.95), 2),
-            "Source Match": round(random.uniform(0.0, 0.95), 2),
-            "Scientific Support": round(random.uniform(0.0, 0.9), 2),
-            "Plausibility": round(random.uniform(0.5, 1.0), 2),
-            "Contradiction Risk": round(random.uniform(0.0, 0.4), 2)
-        }
+        if is_discovery_question:
+            # Forzar scores bajos para Source Match y Scientific Support
+            scores = {
+                "Performance": round(random.uniform(0.75, 0.85), 2),
+                "Source Match": 0.0,
+                "Scientific Support": 0.0,
+                "Plausibility": round(random.uniform(0.7, 0.85), 2),
+                "Contradiction Risk": round(random.uniform(0.0, 0.2), 2)
+            }
+        else:
+            scores = {
+                "Performance": round(random.uniform(0.75, 0.95), 2),
+                "Source Match": round(random.uniform(0.3, 0.95), 2),
+                "Scientific Support": round(random.uniform(0.3, 0.9), 2),
+                "Plausibility": round(random.uniform(0.5, 1.0), 2),
+                "Contradiction Risk": round(random.uniform(0.0, 0.4), 2)
+            }
         results[agent] = scores
 
     # Aggregate global scores
