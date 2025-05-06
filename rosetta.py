@@ -101,7 +101,7 @@ st.title("Rosetta Agent System (No Icons)")
 st.markdown("Visualiza cómo diferentes agentes se activan según la pregunta del usuario.")
 
 question = st.selectbox(
-    "Selecciona una pregunta:",
+    "Select a question:",
     [
         "What is the best treatment for HER2+ breast cancer?",
         "What is the prognosis for stage III colon cancer?",
