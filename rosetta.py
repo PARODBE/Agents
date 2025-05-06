@@ -9,20 +9,27 @@ import random
 # ----------------------------
 st.set_page_config(page_title="Rosetta Agent System", layout="wide")
 
-# Redirección controlada desde otro punto
-if "navigation_target" in st.session_state:
-    page = st.session_state["navigation_target"]
-    del st.session_state["navigation_target"]
-else:
-    if "active_page" not in st.session_state:
-        st.session_state.active_page = "🧠 Agent Graph"
+# Navigation pages
+pages = ["🧠 Agent Graph", "✅ Validation Summary", "🧪 Committee Review"]
 
-    page = st.sidebar.radio(
-        "📂 Navigation",
-        ["🧠 Agent Graph", "✅ Validation Summary", "🧪 Committee Review"],
-        index=["🧠 Agent Graph", "✅ Validation Summary", "🧪 Committee Review"].index(st.session_state.active_page)
-    )
-    st.session_state.active_page = page
+# Initialize session state
+if "active_page" not in st.session_state:
+    st.session_state.active_page = pages[0]
+
+# If a navigation_target exists, update active page and clear it
+if "navigation_target" in st.session_state:
+    st.session_state.active_page = st.session_state["navigation_target"]
+    del st.session_state["navigation_target"]
+
+# Sidebar control
+selected_page = st.sidebar.radio("📂 Navigation", pages, index=pages.index(st.session_state.active_page))
+
+# Update only if changed by user interaction
+if selected_page != st.session_state.active_page:
+    st.session_state.active_page = selected_page
+
+# Use current active page
+page = st.session_state.active_page
 
 # ----------------------------
 # PÁGINA 1: GRAFO DE AGENTES
