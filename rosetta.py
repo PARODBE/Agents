@@ -133,7 +133,20 @@ elif page == "✅ Validation Summary":
     st.title("🔍 Researcher Agent Validation")
 
     # Define outputs by agent
-    question = "What is the best treatment and long-term prognosis for HER2+ breast cancer?"
+    question = st.selectbox(
+    "Select a question:",
+    [
+        "What is the best treatment for HER2+ breast cancer?",
+        "What is the prognosis for stage III colon cancer?",
+        "Is there a new hypothesis linking treatment and prognosis?",
+        "Can you design a clinical protocol for triple-negative breast cancer?",
+        "Discover novel imaging-genomic signatures predicting resistance to immunotherapy",
+        "Show all agents"
+    ]
+    )
+    
+    # Guardamos la pregunta seleccionada en session_state para compartir entre páginas
+    st.session_state["selected_question"] = question
     st.markdown(f"### 📌 Question: *{question}*")
 
     agent_outputs = {
@@ -198,6 +211,9 @@ elif page == "✅ Validation Summary":
     if global_score["Source Match"] == 0 and global_score["Scientific Support"] == 0:
         st.warning("⚠️ No supporting scientific literature was found for any agent.")
         st.info("This may indicate a novel hypothesis. Recommend expert committee review.")
+        if st.button("🔎 Evaluate as Scientific Committee"):
+            st.session_state["hypothesis_under_review"] = question
+            st.switch_page("🧪 Committee Review")
     else:
         st.write(global_score)
         st.success(f"🧠 Final Certainty Score: **{final_score * 100:.1f}%**")
@@ -252,3 +268,50 @@ elif page == "✅ Validation Summary":
   - Regression → RMSE, MAE, R²  
 - **Score:** Rescaled metric from 0–1 (e.g., AUC of 0.88 → score 0.88)
         """)
+
+
+# Configuración inicial
+st.set_page_config(page_title="Scientific Committee Review", layout="wide")
+st.title("🧪 Scientific Committee Review")
+
+# Recuperamos la hipótesis enviada desde la validación
+hypothesis = st.session_state.get("hypothesis_under_review", "No hypothesis submitted.")
+
+# Mostrar la hipótesis
+st.markdown("### 🧬 Candidate Hypothesis for Evaluation:")
+st.info(f"**{hypothesis}**")
+
+st.markdown("---")
+st.subheader("🧭 Committee Evaluation Criteria")
+
+# Checkboxes para cada criterio de revisión
+plausible = st.checkbox("✅ Biologically plausible")
+internally_coherent = st.checkbox("✅ Internally consistent across data modalities")
+testable = st.checkbox("✅ Feasible to validate experimentally")
+original = st.checkbox("✅ Clearly novel compared to existing literature")
+
+# Calcular puntuación total
+total_score = sum([plausible, internally_coherent, testable, original])
+score_percent = int((total_score / 4) * 100)
+
+st.markdown(f"### 🔢 Committee Review Score: **{score_percent}%**")
+
+# Mostrar resultado final
+if score_percent >= 75:
+    st.success("✅ Approved for inclusion in the Research Ideas Pool.")
+    if st.button("📦 Add to Research Idea Pool"):
+        st.session_state.setdefault("research_ideas", []).append(hypothesis)
+        st.success("✅ Hypothesis added to pool.")
+else:
+    st.warning("🕵️ More review or evidence needed before approval.")
+
+# Mostrar ideas ya aprobadas (si existen)
+st.markdown("---")
+st.subheader("📦 Validated Research Ideas Pool")
+
+ideas = st.session_state.get("research_ideas", [])
+if ideas:
+    for idea in ideas:
+        st.markdown(f"🧠 **{idea}**")
+else:
+    st.info("No research ideas approved yet.")
