@@ -97,7 +97,7 @@ def get_active_nodes(question):
 # --- INTERFAZ STREAMLIT ---
 
 st.set_page_config(layout="wide")
-st.title("Rosetta Agent System (No Icons)")
+st.title("Rosetta Agent System")
 # st.markdown("Visualiza cómo diferentes agentes se activan según la pregunta del usuario.")
 
 question = st.selectbox(
