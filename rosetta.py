@@ -247,7 +247,3 @@ elif page == "✅ Validation Summary":
   - Regression → RMSE, MAE, R²  
 - **Score:** Rescaled metric from 0–1 (e.g., AUC of 0.88 → score 0.88)
         """)
-
-
-    st.progress(final_score)
-    st.success(f"🧠 Final Certainty Score: **{final_score * 100:.1f}%**")
