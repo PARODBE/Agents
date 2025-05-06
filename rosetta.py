@@ -131,7 +131,7 @@ elif page == "✅ Validation Summary":
     st.title("🔍 Researcher Agent Validation")
 
     # Define outputs by agent
-    question = st.session_state.get("selected_question", "What is the best treatment for HER2+ breast cancer?")
+    question = "What is the best treatment and long-term prognosis for HER2+ breast cancer?"
     st.markdown(f"### 📌 Question: *{question}*")
 
     agent_outputs = {
@@ -141,17 +141,17 @@ elif page == "✅ Validation Summary":
         "Guidelines agent": "NCCN recommends trastuzumab and pertuzumab for HER2+ breast cancer treatment."
     }
 
-    # Define which agents are involved
+    active_agents = []
     if "treatment" in question.lower():
-        active_agents = ["Treatment agent"]
-    elif "prognosis" in question.lower():
-        active_agents = ["Prognostic agent"]
-    elif "diagnosis" in question.lower():
-        active_agents = ["Diagnosis agent"]
-    elif "guideline" in question.lower():
-        active_agents = ["Guidelines agent"]
-    else:
-        active_agents = ["Treatment agent", "Prognostic agent"]  # default case
+        active_agents.append("Treatment agent")
+    if "prognosis" in question.lower():
+        active_agents.append("Prognostic agent")
+    if "diagnosis" in question.lower():
+        active_agents.append("Diagnosis agent")
+    if "guideline" in question.lower():
+        active_agents.append("Guidelines agent")
+    if not active_agents:
+        active_agents = ["Treatment agent", "Prognostic agent"]  # default
 
     # Simulate scores per agent
     results = {}
