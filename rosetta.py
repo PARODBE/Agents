@@ -28,7 +28,7 @@ G.add_node("Graph-researcher agent", layer=5)
 G.add_edge("Multi-researcher agent", "Protocol agent")
 G.add_edge("Multi-researcher agent", "Graph-researcher agent")
 
-# --- POSICIONES EN CAPAS ---
+# --- POSICIONES ---
 
 layer_positions = {
     0: ["Rosetta Agent"],
@@ -58,7 +58,6 @@ def draw_graph(active_nodes=None):
     node_width = 2.2
     node_height = 0.9
 
-    # Nodos
     for node in G.nodes():
         x, y = pos[node]
         color = "lightgreen" if active_nodes and node in active_nodes else "lightblue"
@@ -67,7 +66,6 @@ def draw_graph(active_nodes=None):
         ax.add_patch(rect)
         ax.text(x, y, node, ha='center', va='center', fontsize=8, wrap=True)
 
-    # Flechas desde borde inferior a borde superior
     for u, v in G.edges():
         x1, y1 = pos[u]
         x2, y2 = pos[v]
@@ -101,7 +99,7 @@ def get_active_nodes(question):
 
 # --- STREAMLIT UI ---
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Rosetta Agent", layout="wide")
 st.title("Rosetta Agent System")
 
 question = st.selectbox(
@@ -118,3 +116,63 @@ question = st.selectbox(
 active_nodes = get_active_nodes(question)
 fig = draw_graph(active_nodes)
 st.pyplot(fig)
+
+st.set_page_config(page_title="Validation Summary", layout="centered")
+st.title("🔍 Researcher Agent Validation")
+
+example_output = "Predicted survival improvement in HER2+ breast cancer when adding pertuzumab."
+st.markdown(f"### 💬 Agent's Output:\n> *{example_output}*")
+
+st.markdown("---")
+st.subheader("🧪 Validation Scores (simulated)")
+
+# Random scores
+performance_score = round(random.uniform(0.7, 0.95), 2)
+source_match = round(random.uniform(0.6, 0.95), 2)
+scientific_support = round(random.uniform(0.5, 0.9), 2)
+plausibility = round(random.uniform(0.6, 0.95), 2)
+contradiction_risk = round(random.uniform(0.0, 0.4), 2)
+
+final_score = round(
+    0.4 * performance_score +
+    0.2 * source_match +
+    0.15 * scientific_support +
+    0.15 * plausibility +
+    0.1 * (1 - contradiction_risk),
+    2
+)
+
+# Display results
+st.write({
+    "Performance Score": performance_score,
+    "Source Match Score": source_match,
+    "Scientific Support Score": scientific_support,
+    "Plausibility Score": plausibility,
+    "Contradiction Risk Score": contradiction_risk,
+    "➡️ Final Certainty Score": final_score
+})
+
+with st.expander("ℹ️ Explanation of Scores"):
+    st.markdown("""
+- **🔹 Source Match Score**  
+  *Does the literature say something similar?*  
+  ➤ Based on semantic similarity between agent output and abstracts.
+
+- **🔹 Scientific Support Score**  
+  *Are sources high-quality?*  
+  ➤ Weighted by source type (e.g., RCT > review > preprint).
+
+- **🔹 Plausibility Score**  
+  *Does the claim make biomedical sense?*  
+  ➤ Evaluated by a scientific LLM.
+
+- **🔹 Contradiction Risk Score**  
+  *Is there scientific evidence against this?*  
+  ➤ Checked via semantic contradiction in retrieved papers.
+
+- **🟢 Performance Score**  
+  *How well did the model do on known validation data (e.g., AUC)?*
+    """)
+
+st.progress(final_score)
+st.success(f"🧠 Final Certainty Score: **{final_score * 100:.1f}%**")
