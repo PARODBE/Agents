@@ -8,15 +8,13 @@ import random
 # CONFIGURACIÓN STREAMLIT
 # ----------------------------
 st.set_page_config(page_title="Rosetta Agent System", layout="wide")
+
+# Redirección controlada desde otro punto
 if "navigation_target" in st.session_state:
     page = st.session_state["navigation_target"]
     del st.session_state["navigation_target"]
-st.sidebar.title("📂 Navigation")
-page = st.sidebar.radio("Go to", [
-    "🧠 Agent Graph",
-    "✅ Validation Summary",
-    "🧪 Committee Review"
-])
+else:
+    page = st.sidebar.radio("📂 Navigation", ["🧠 Agent Graph", "✅ Validation Summary", "🧪 Committee Review"])
 
 # ----------------------------
 # PÁGINA 1: GRAFO DE AGENTES
@@ -25,7 +23,6 @@ if page == "🧠 Agent Graph":
 
     st.title("Rosetta Agent System")
 
-    # --- GRAFO SETUP ---
     G = nx.DiGraph()
     G.add_node("Rosetta Agent", layer=0)
     G.add_node("Question-classifier agent", layer=1)
@@ -49,7 +46,6 @@ if page == "🧠 Agent Graph":
     G.add_edge("Multi-researcher agent", "Protocol agent")
     G.add_edge("Multi-researcher agent", "Graph-researcher agent")
 
-    # --- POSICIONES ---
     layer_positions = {
         0: ["Rosetta Agent"],
         1: ["Question-classifier agent"],
@@ -124,36 +120,23 @@ if page == "🧠 Agent Graph":
             "What is the prognosis for stage III colon cancer?",
             "Is there a new hypothesis linking treatment and prognosis?",
             "Can you design a clinical protocol for triple-negative breast cancer?",
-            "Show all agents"
+            "Discover novel imaging-genomic signatures predicting resistance to immunotherapy"
         ]
     )
 
+    st.session_state["selected_question"] = question
     active_nodes = get_active_nodes(question)
     fig = draw_graph(active_nodes)
     st.pyplot(fig)
 
 # ----------------------------
-# PÁGINA 2: VALIDACIÓN Y SCORES
+# PÁGINA 2: VALIDACIÓN
 # ----------------------------
 elif page == "✅ Validation Summary":
 
     st.title("🔍 Researcher Agent Validation")
 
-    # Define outputs by agent
-    question = st.selectbox(
-    "Select a question:",
-    [
-        "What is the best treatment for HER2+ breast cancer?",
-        "What is the prognosis for stage III colon cancer?",
-        "Is there a new hypothesis linking treatment and prognosis?",
-        "Can you design a clinical protocol for triple-negative breast cancer?",
-        "Discover novel imaging-genomic signatures predicting resistance to immunotherapy",
-        "Show all agents"
-    ]
-    )
-    
-    # Guardamos la pregunta seleccionada en session_state para compartir entre páginas
-    st.session_state["selected_question"] = question
+    question = st.session_state.get("selected_question", "")
     st.markdown(f"### 📌 Question: *{question}*")
 
     agent_outputs = {
@@ -176,15 +159,13 @@ elif page == "✅ Validation Summary":
     if "genomic" in question.lower():
         active_agents.append("Genomic agent")
     if not active_agents:
-        active_agents = ["Treatment agent", "Prognostic agent"]  # default
+        active_agents = ["Treatment agent", "Prognostic agent"]
 
-    # Simulate scores per agent
     results = {}
     is_discovery_question = "discover novel imaging-genomic signatures" in question.lower()
-    
+
     for agent in active_agents:
         if is_discovery_question:
-            # Forzar scores bajos para Source Match y Scientific Support
             scores = {
                 "Performance": round(random.uniform(0.75, 0.85), 2),
                 "Source Match": 0.0,
@@ -202,13 +183,11 @@ elif page == "✅ Validation Summary":
             }
         results[agent] = scores
 
-    # Aggregate global scores
     global_score = {
         key: round(sum(agent_scores[key] for agent_scores in results.values()) / len(results), 2)
         for key in ["Performance", "Source Match", "Scientific Support", "Plausibility", "Contradiction Risk"]
     }
 
-    # Final certainty score
     final_score = round(
         0.4 * global_score["Performance"] +
         0.2 * global_score["Source Match"] +
@@ -218,7 +197,6 @@ elif page == "✅ Validation Summary":
         2
     )
 
-    # Show agent outputs and individual scores
     for agent in active_agents:
         st.markdown(f"#### 🤖 {agent}")
         st.markdown(f"**Output:** *{agent_outputs.get(agent, 'No output available.')}*")
@@ -232,86 +210,32 @@ elif page == "✅ Validation Summary":
         st.info("This may indicate a novel hypothesis. Recommend expert committee review.")
         if st.button("🔎 Evaluate as Scientific Committee"):
             st.session_state["hypothesis_under_review"] = question
-            st.switch_page("🧪 Committee Review")
+            st.session_state["navigation_target"] = "🧪 Committee Review"
+            st.experimental_rerun()
     else:
         st.write(global_score)
         st.success(f"🧠 Final Certainty Score: **{final_score * 100:.1f}%**")
         st.progress(final_score)
 
-    with st.expander("ℹ️ How are the scores evaluated?"):
-        st.markdown("""
-### 🔹 Source Match Score  
-**Does the literature say something similar?**  
-- A RAG (Retrieval-Augmented Generation) system retrieves top-k relevant abstracts from biomedical databases like PubMed.  
-- The agent's output is compared semantically to each abstract.  
-- **Metric:** Cosine similarity of embeddings (e.g., BioSentVec, SciBERT, SBERT).  
-- **Score:** Average similarity score over top-k documents, normalized to 0–1.
+# ----------------------------
+# PÁGINA 3: COMITÉ CIENTÍFICO
+# ----------------------------
+elif page == "🧪 Committee Review":
 
----
-
-### 🔹 Scientific Support Score  
-**Are the sources high quality and reliable?**  
-- For each retrieved source, a biomedical LLM is prompted to assess:  
-  • Study type (e.g., RCT, cohort, review)  
-  • Journal quality and impact  
-  • Sample size (parsed or inferred)  
-  • Citation count (via Semantic Scholar API or CrossRef)  
-  • Recency (based on publication year)  
-- The LLM produces a support confidence score per abstract.  
-- **Score:** Weighted average of evidence-level, impact, sample size, citation count, and recency.
-
----
-
-### 🔹 Plausibility Score  
-**Does the claim make biomedical sense?**  
-- Evaluated using a domain-tuned LLM (e.g., BioMedLM, PubMedGPT).  
-- Prompt example:  
-  *"Is the following medical hypothesis plausible based on current knowledge? Rate from 0 (implausible) to 1 (very plausible): '{claim}'."*  
-- **Score:** LLM confidence score directly (or derived from likelihood/logits).
-
----
-
-### 🔹 Contradiction Risk Score  
-**Is there evidence against the agent’s output?**  
-- The same RAG-retrieved documents are passed to the LLM or a contradiction classifier.  
-- Prompt example:  
-  *"Does this abstract contradict the following statement? Answer: supports / contradicts / unrelated."*  
-- **Score:** Probability of contradiction. Final score is `1 - contradiction_prob`.
-
----
-
-### 🟢 Performance Score  
-**How well did the model perform during development?**  
-- Based on traditional validation data:
-  - Classification → AUC, F1-score, Accuracy  
-  - Regression → RMSE, MAE, R²  
-- **Score:** Rescaled metric from 0–1 (e.g., AUC of 0.88 → score 0.88)
-        """)
-
-
-elif st.button("🔎 Evaluate as Scientific Committee"):
-    st.session_state["hypothesis_under_review"] = question
-    st.session_state["navigation_target"] = "🧪 Committee Review"
-    st.experimental_rerun()
-    
     st.title("🧪 Scientific Committee Review")
 
-    # Recuperar la hipótesis enviada
     hypothesis = st.session_state.get("hypothesis_under_review", "No hypothesis submitted.")
-
     st.markdown("### 🧬 Candidate Hypothesis for Evaluation:")
     st.info(f"**{hypothesis}**")
 
     st.markdown("---")
     st.subheader("🧭 Committee Evaluation Criteria")
 
-    # Ticks de evaluación
     plausible = st.checkbox("✅ Biologically plausible")
     internally_coherent = st.checkbox("✅ Internally consistent across data modalities")
     testable = st.checkbox("✅ Feasible to validate experimentally")
     original = st.checkbox("✅ Clearly novel compared to existing literature")
 
-    # Score total
     total_score = sum([plausible, internally_coherent, testable, original])
     score_percent = int((total_score / 4) * 100)
 
@@ -325,7 +249,6 @@ elif st.button("🔎 Evaluate as Scientific Committee"):
     else:
         st.warning("🕵️ More review or evidence needed before approval.")
 
-    # Mostrar ideas aprobadas
     st.markdown("---")
     st.subheader("📦 Validated Research Ideas Pool")
 
