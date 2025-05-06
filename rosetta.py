@@ -98,7 +98,7 @@ def get_active_nodes(question):
 
 st.set_page_config(layout="wide")
 st.title("Rosetta Agent System (No Icons)")
-st.markdown("Visualiza cómo diferentes agentes se activan según la pregunta del usuario.")
+# st.markdown("Visualiza cómo diferentes agentes se activan según la pregunta del usuario.")
 
 question = st.selectbox(
     "Select a question:",
