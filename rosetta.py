@@ -14,7 +14,15 @@ if "navigation_target" in st.session_state:
     page = st.session_state["navigation_target"]
     del st.session_state["navigation_target"]
 else:
-    page = st.sidebar.radio("📂 Navigation", ["🧠 Agent Graph", "✅ Validation Summary", "🧪 Committee Review"])
+    if "active_page" not in st.session_state:
+        st.session_state.active_page = "🧠 Agent Graph"
+
+    page = st.sidebar.radio(
+        "📂 Navigation",
+        ["🧠 Agent Graph", "✅ Validation Summary", "🧪 Committee Review"],
+        index=["🧠 Agent Graph", "✅ Validation Summary", "🧪 Committee Review"].index(st.session_state.active_page)
+    )
+    st.session_state.active_page = page
 
 # ----------------------------
 # PÁGINA 1: GRAFO DE AGENTES
