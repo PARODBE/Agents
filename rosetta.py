@@ -9,7 +9,11 @@ import random
 # ----------------------------
 st.set_page_config(page_title="Rosetta Agent System", layout="wide")
 st.sidebar.title("📂 Navigation")
-page = st.sidebar.radio("Go to", ["🧠 Agent Graph", "✅ Validation Summary"])
+page = st.sidebar.radio("Go to", [
+    "🧠 Agent Graph",
+    "✅ Validation Summary",
+    "🧪 Committee Review"
+])
 
 # ----------------------------
 # PÁGINA 1: GRAFO DE AGENTES
@@ -270,48 +274,45 @@ elif page == "✅ Validation Summary":
         """)
 
 
-# Configuración inicial
-st.set_page_config(page_title="Scientific Committee Review", layout="wide")
-st.title("🧪 Scientific Committee Review")
+elif page == "🧪 Committee Review":
+    st.title("🧪 Scientific Committee Review")
 
-# Recuperamos la hipótesis enviada desde la validación
-hypothesis = st.session_state.get("hypothesis_under_review", "No hypothesis submitted.")
+    # Recuperar la hipótesis enviada
+    hypothesis = st.session_state.get("hypothesis_under_review", "No hypothesis submitted.")
 
-# Mostrar la hipótesis
-st.markdown("### 🧬 Candidate Hypothesis for Evaluation:")
-st.info(f"**{hypothesis}**")
+    st.markdown("### 🧬 Candidate Hypothesis for Evaluation:")
+    st.info(f"**{hypothesis}**")
 
-st.markdown("---")
-st.subheader("🧭 Committee Evaluation Criteria")
+    st.markdown("---")
+    st.subheader("🧭 Committee Evaluation Criteria")
 
-# Checkboxes para cada criterio de revisión
-plausible = st.checkbox("✅ Biologically plausible")
-internally_coherent = st.checkbox("✅ Internally consistent across data modalities")
-testable = st.checkbox("✅ Feasible to validate experimentally")
-original = st.checkbox("✅ Clearly novel compared to existing literature")
+    # Ticks de evaluación
+    plausible = st.checkbox("✅ Biologically plausible")
+    internally_coherent = st.checkbox("✅ Internally consistent across data modalities")
+    testable = st.checkbox("✅ Feasible to validate experimentally")
+    original = st.checkbox("✅ Clearly novel compared to existing literature")
 
-# Calcular puntuación total
-total_score = sum([plausible, internally_coherent, testable, original])
-score_percent = int((total_score / 4) * 100)
+    # Score total
+    total_score = sum([plausible, internally_coherent, testable, original])
+    score_percent = int((total_score / 4) * 100)
 
-st.markdown(f"### 🔢 Committee Review Score: **{score_percent}%**")
+    st.markdown(f"### 🔢 Committee Review Score: **{score_percent}%**")
 
-# Mostrar resultado final
-if score_percent >= 75:
-    st.success("✅ Approved for inclusion in the Research Ideas Pool.")
-    if st.button("📦 Add to Research Idea Pool"):
-        st.session_state.setdefault("research_ideas", []).append(hypothesis)
-        st.success("✅ Hypothesis added to pool.")
-else:
-    st.warning("🕵️ More review or evidence needed before approval.")
+    if score_percent >= 75:
+        st.success("✅ Approved for inclusion in the Research Ideas Pool.")
+        if st.button("📦 Add to Research Idea Pool"):
+            st.session_state.setdefault("research_ideas", []).append(hypothesis)
+            st.success("✅ Hypothesis added to pool.")
+    else:
+        st.warning("🕵️ More review or evidence needed before approval.")
 
-# Mostrar ideas ya aprobadas (si existen)
-st.markdown("---")
-st.subheader("📦 Validated Research Ideas Pool")
+    # Mostrar ideas aprobadas
+    st.markdown("---")
+    st.subheader("📦 Validated Research Ideas Pool")
 
-ideas = st.session_state.get("research_ideas", [])
-if ideas:
-    for idea in ideas:
-        st.markdown(f"🧠 **{idea}**")
-else:
-    st.info("No research ideas approved yet.")
+    ideas = st.session_state.get("research_ideas", [])
+    if ideas:
+        for idea in ideas:
+            st.markdown(f"🧠 **{idea}**")
+    else:
+        st.info("No research ideas approved yet.")
