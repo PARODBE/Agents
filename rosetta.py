@@ -140,7 +140,7 @@ elif page == "✅ Validation Summary":
         "Treatment agent": "Adding pertuzumab improves pathological complete response in HER2+ breast cancer.",
         "Prognostic agent": "Patients with HER2+ tumors show improved survival when treated early.",
         "Diagnosis agent": "HER2+ subtype is confirmed by overexpression of HER2 protein in immunohistochemistry.",
-        "Guidelines agent": "NCCN recommends trastuzumab and pertuzumab for HER2+ breast cancer treatment."
+        "Guidelines agent": "NCCN recommends trastuzumab and pertuzumab for HER2+ breast cancer treatment.",
         "Genomic agent": "HER2+ breast cancer is characterized by ERBB2 gene amplification, leading to HER2 protein overexpression."
     }
 
