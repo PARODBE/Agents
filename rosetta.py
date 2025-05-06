@@ -28,7 +28,7 @@ G.add_node("Graph-researcher agent", layer=5)
 G.add_edge("Multi-researcher agent", "Protocol agent")
 G.add_edge("Multi-researcher agent", "Graph-researcher agent")
 
-# --- POSICIONES ---
+# --- POSICIONES EN CAPAS ---
 
 layer_positions = {
     0: ["Rosetta Agent"],
@@ -55,22 +55,27 @@ def draw_graph(active_nodes=None):
     fig, ax = plt.subplots(figsize=(15, 12))
     ax.set_title("Rosetta Agent System", fontsize=16)
 
+    node_width = 2.2
+    node_height = 0.9
+
+    # Nodos
     for node in G.nodes():
         x, y = pos[node]
-        width = 2.2
-        height = 0.9
         color = "lightgreen" if active_nodes and node in active_nodes else "lightblue"
-        rect = mpatches.FancyBboxPatch((x - width/2, y - height/2), width, height,
+        rect = mpatches.FancyBboxPatch((x - node_width / 2, y - node_height / 2), node_width, node_height,
                                        boxstyle="round,pad=0.05", ec="black", fc=color)
         ax.add_patch(rect)
         ax.text(x, y, node, ha='center', va='center', fontsize=8, wrap=True)
 
+    # Flechas desde borde inferior a borde superior
     for u, v in G.edges():
         x1, y1 = pos[u]
         x2, y2 = pos[v]
+        start = (x1, y1 - node_height / 2)
+        end = (x2, y2 + node_height / 2)
         ax.annotate("",
-                    xy=(x2, y2), xycoords='data',
-                    xytext=(x1, y1), textcoords='data',
+                    xy=end, xycoords='data',
+                    xytext=start, textcoords='data',
                     arrowprops=dict(arrowstyle="->", lw=1.2))
 
     ax.set_xlim(-12, 12)
@@ -94,11 +99,10 @@ def get_active_nodes(question):
         active.update(["Multi-researcher agent", "Graph-researcher agent"])
     return active
 
-# --- INTERFAZ STREAMLIT ---
+# --- STREAMLIT UI ---
 
 st.set_page_config(layout="wide")
 st.title("Rosetta Agent System")
-# st.markdown("Visualiza cómo diferentes agentes se activan según la pregunta del usuario.")
 
 question = st.selectbox(
     "Select a question:",
