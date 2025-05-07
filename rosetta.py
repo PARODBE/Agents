@@ -1,3 +1,5 @@
+import streamlit as st
+
 # Mostrar tooltips con imágenes para cada Researcher Agent
 st.markdown("### 🧬 Researcher Agent Insights (Hover to Preview)")
 
