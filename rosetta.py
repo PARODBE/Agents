@@ -236,6 +236,56 @@ elif page == "✅ Validation Summary":
         st.success(f"🧠 Final Certainty Score: **{final_score * 100:.1f}%**")
         st.progress(final_score)
 
+with st.expander("ℹ️ How are the scores evaluated?"):
+    st.markdown("""
+    ### 🔹 Source Match Score  
+    **Does the literature say something similar?**  
+    - A RAG (Retrieval-Augmented Generation) system retrieves top-k relevant abstracts from biomedical databases like PubMed.  
+    - The agent's output is compared semantically to each abstract.  
+    - **Metric:** Cosine similarity of embeddings (e.g., BioSentVec, SciBERT, SBERT).  
+    - **Score:** Average similarity score over top-k documents, normalized to 0–1.
+
+    ---
+
+    ### 🔹 Scientific Support Score  
+    **Are the sources high quality and reliable?**  
+    - For each retrieved source, a biomedical LLM is prompted to assess:  
+      • Study type (e.g., RCT, cohort, review)  
+      • Journal quality and impact  
+      • Sample size (parsed or inferred)  
+      • Citation count (via Semantic Scholar API or CrossRef)  
+      • Recency (based on publication year)  
+    - The LLM produces a support confidence score per abstract.  
+    - **Score:** Weighted average of evidence-level, impact, sample size, citation count, and recency.
+
+    ---
+
+    ### 🔹 Plausibility Score  
+    **Does the claim make biomedical sense?**  
+    - Evaluated using a domain-tuned LLM (e.g., BioMedLM, PubMedGPT).  
+    - Prompt example:  
+      *"Is the following medical hypothesis plausible based on current knowledge? Rate from 0 (implausible) to 1 (very plausible): '{claim}'."*  
+    - **Score:** LLM confidence score directly (or derived from likelihood/logits).
+
+    ---
+
+    ### 🔹 Contradiction Risk Score  
+    **Is there evidence against the agent’s output?**  
+    - The same RAG-retrieved documents are passed to the LLM or a contradiction classifier.  
+    - Prompt example:  
+      *"Does this abstract contradict the following statement? Answer: supports / contradicts / unrelated."*  
+    - **Score:** Probability of contradiction. Final score is `1 - contradiction_prob`.
+
+    ---
+
+    ### 🟢 Performance Score  
+    **How well did the model perform during development?**  
+    - Based on traditional validation data:
+      - Classification → AUC, F1-score, Accuracy  
+      - Regression → RMSE, MAE, R²  
+    - **Score:** Rescaled metric from 0–1 (e.g., AUC of 0.88 → score 0.88)
+    """)
+
 # ----------------------------
 # PÁGINA 3: COMITÉ CIENTÍFICO
 # ----------------------------
