@@ -65,7 +65,7 @@ def display_image_on_hover(name, image_url, i):
             <div class="{popup_class}"></div>
         </div>
     '''
-    st.markdown(html, unsafe_allow_html=True)
+    st.markdown(f"{tooltip_css}{image_hover}", unsafe_allow_html=True)
 
 # Mostrar cada agente con su imagen
 for i, (agent, url) in enumerate(agent_images.items()):
