@@ -1,47 +1,46 @@
+# Importing Streamlit
 import streamlit as st
-from pyvis.network import Network
-import streamlit.components.v1 as components
-import os
 
-# Configurar Streamlit
-st.set_page_config(page_title="Rosetta Agent Graph", layout="wide")
-st.title("🧠 Rosetta Agent Graph with Visual Tooltips")
+# Define HTML and CSS for the tooltip
+html_content = """
+<style>
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
 
-# Crear red con PyVis
-net = Network(height="600px", width="100%", directed=True, notebook=False)
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: white;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
 
-# Añadir nodos principales
-net.add_node("Rosetta Agent")
-net.add_node("Question-classifier agent")
-net.add_edge("Rosetta Agent", "Question-classifier agent")
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+</style>
 
-# Agentes funcionales y researcher
-functional_agents = ["Diagnosis agent", "Treatment agent", "Prognostic agent", "Guidelines agent", "Genomic agent"]
-researcher_agents = [f"{a.split()[0]} Researcher agent" for a in functional_agents]
+<div class="tooltip">
+  <img src="https://cdn.vox-cdn.com/thumbor/WR9hE8wvdM4hfHysXitls9_bCZI=/0x0:1192x795/1400x1400/filters:focal(596x398:597x399)/cdn.vox-cdn.com/uploads/chorus_asset/file/22312759/rickroll_4k.jpg" alt="Image" style="width:200px;height:auto;">
+  <span class="tooltiptext">Tooltip text</span>
+</div>
+"""
 
-img_url = "https://raw.githubusercontent.com/PARODBE/Agents/main/validation.png"
-
-for agent, researcher in zip(functional_agents, researcher_agents):
-    net.add_node(agent)
-    net.add_node(researcher)
-
-    net.add_edge("Question-classifier agent", agent)
-    net.add_edge(agent, researcher)
-
-    # Tooltip con imagen solo para los Researcher
-    if "Genomic" in researcher:
-        tooltip = f"""
-        <div style='padding:5px;'>
-            <b>{researcher}</b><br>
-            <img src='{img_url}' width='180'><br>
-            <small>Hover to view validation pipeline</small>
-        </div>
-        """
-        net.get_node(researcher)["title"] = tooltip
-
-# Guardar y mostrar grafo
-net.save_graph("graph.html")
-components.html(open("graph.html", "r", encoding="utf-8").read(), height=650, scrolling=True)
+# Display HTML in Streamlit
+st.markdown(html_content, unsafe_allow_html=True)
 
 
 # import streamlit as st
