@@ -1,48 +1,47 @@
-from pyvis.network import Network
 import streamlit as st
+from pyvis.network import Network
+import streamlit.components.v1 as components
+import os
 
-st.set_page_config(layout="wide")
-st.title("🔬 Interactive Graph with Hover Tooltips")
+# Configurar Streamlit
+st.set_page_config(page_title="Rosetta Agent Graph", layout="wide")
+st.title("🧠 Rosetta Agent Graph with Visual Tooltips")
 
-# Crear red
-net = Network(height="600px", width="100%", directed=True)
+# Crear red con PyVis
+net = Network(height="600px", width="100%", directed=True, notebook=False)
 
-# Imagen alojada en GitHub como hover visual
-img_url = "https://raw.githubusercontent.com/PARODBE/Agents/main/validation.png"
-
-# Nodos tipo Researcher con tooltip HTML
-researchers = [
-    "Diagnosis Researcher agent",
-    "Treatment Researcher agent",
-    "Prognostic Researcher agent",
-    "Guidelines Researcher agent",
-    "Genomic Researcher agent"
-]
-
-for r in researchers:
-    tooltip = f"""
-    <div style='padding:5px;'>
-        <b>{r}</b><br>
-        <img src='{img_url}' width='180'><br>
-        <small>Hover to view validation pipeline</small>
-    </div>
-    """
-    net.add_node(r, label=r, title=tooltip)
-
-# Otros nodos y relaciones
+# Añadir nodos principales
 net.add_node("Rosetta Agent")
 net.add_node("Question-classifier agent")
 net.add_edge("Rosetta Agent", "Question-classifier agent")
 
-for r in researchers:
-    agent = r.replace("Researcher agent", "agent")
-    net.add_node(agent)
-    net.add_edge("Question-classifier agent", agent)
-    net.add_edge(agent, r)
+# Agentes funcionales y researcher
+functional_agents = ["Diagnosis agent", "Treatment agent", "Prognostic agent", "Guidelines agent", "Genomic agent"]
+researcher_agents = [f"{a.split()[0]} Researcher agent" for a in functional_agents]
 
-# Mostrar el grafo
-net.save_graph("hover_tooltip_graph.html")
-st.components.v1.html(open("hover_tooltip_graph.html").read(), height=650, scrolling=True)
+img_url = "https://raw.githubusercontent.com/PARODBE/Agents/main/validation.png"
+
+for agent, researcher in zip(functional_agents, researcher_agents):
+    net.add_node(agent)
+    net.add_node(researcher)
+
+    net.add_edge("Question-classifier agent", agent)
+    net.add_edge(agent, researcher)
+
+    # Tooltip con imagen solo para los Researcher
+    if "Genomic" in researcher:
+        tooltip = f"""
+        <div style='padding:5px;'>
+            <b>{researcher}</b><br>
+            <img src='{img_url}' width='180'><br>
+            <small>Hover to view validation pipeline</small>
+        </div>
+        """
+        net.get_node(researcher)["title"] = tooltip
+
+# Guardar y mostrar grafo
+net.save_graph("graph.html")
+components.html(open("graph.html", "r", encoding="utf-8").read(), height=650, scrolling=True)
 
 
 # import streamlit as st
