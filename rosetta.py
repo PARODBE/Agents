@@ -111,22 +111,22 @@ if page == "🧠 Agent Graph":
         return fig
 
     def get_active_nodes(question):
-    active = {"Rosetta Agent", "Question-classifier agent"}
-
-    if question == "What biomarkers support diagnosis of triple-negative breast cancer?":
-        active.update(["Diagnosis agent", "Diagnosis Researcher agent"])
-
-    elif question == "How effective is trastuzumab in early-stage HER2+ patients?":
-        active.update(["Treatment agent", "Treatment Researcher agent",
-                       "Prognostic agent", "Prognostic Researcher agent"])
-
-    elif question == "Discover novel imaging-genomic signatures predicting resistance to immunotherapy":
-        active.update([
-            "Genomic agent", "Genomic Researcher agent",
-            "Multi-researcher agent", "Protocol agent", "Graph-researcher agent"
-        ])
-
-    return active
+        active = {"Rosetta Agent", "Question-classifier agent"}
+    
+        if question == "What biomarkers support diagnosis of triple-negative breast cancer?":
+            active.update(["Diagnosis agent", "Diagnosis Researcher agent"])
+    
+        elif question == "How effective is trastuzumab in early-stage HER2+ patients?":
+            active.update(["Treatment agent", "Treatment Researcher agent",
+                           "Prognostic agent", "Prognostic Researcher agent"])
+    
+        elif question == "Discover novel imaging-genomic signatures predicting resistance to immunotherapy":
+            active.update([
+                "Genomic agent", "Genomic Researcher agent",
+                "Multi-researcher agent", "Protocol agent", "Graph-researcher agent"
+            ])
+    
+        return active
 
     question = st.selectbox(
     "Select a question:",
