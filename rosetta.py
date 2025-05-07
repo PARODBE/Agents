@@ -111,33 +111,31 @@ if page == "🧠 Agent Graph":
         return fig
 
     def get_active_nodes(question):
-        active = {"Rosetta Agent", "Question-classifier agent"}
-        if "diagnosis" in question.lower():
-            active.update(["Diagnosis agent", "Diagnosis Researcher agent"])
-        if "treatment" in question.lower():
-            active.update(["Treatment agent", "Treatment Researcher agent"])
-        if "prognosis" in question.lower():
-            active.update(["Prognostic agent", "Prognostic Researcher agent"])
-        if "guideline" in question.lower():
-            active.update(["Guidelines agent", "Guidelines Researcher agent"])
-        if "genomic" in question.lower():
-            active.update(["Genomic agent", "Genomic Researcher agent"])
-        if "protocol" in question.lower():
-            active.update(["Multi-researcher agent", "Protocol agent"])
-        if "hypothesis" in question.lower() or "graph" in question.lower():
-            active.update(["Multi-researcher agent", "Graph-researcher agent"])
-        return active
+    active = {"Rosetta Agent", "Question-classifier agent"}
+
+    if question == "What biomarkers support diagnosis of triple-negative breast cancer?":
+        active.update(["Diagnosis agent", "Diagnosis Researcher agent"])
+
+    elif question == "How effective is trastuzumab in early-stage HER2+ patients?":
+        active.update(["Treatment agent", "Treatment Researcher agent",
+                       "Prognostic agent", "Prognostic Researcher agent"])
+
+    elif question == "Discover novel imaging-genomic signatures predicting resistance to immunotherapy":
+        active.update([
+            "Genomic agent", "Genomic Researcher agent",
+            "Multi-researcher agent", "Protocol agent", "Graph-researcher agent"
+        ])
+
+    return active
 
     question = st.selectbox(
-        "Select a question:",
-        [
-            "What is the best treatment for HER2+ breast cancer?",
-            "What is the prognosis for stage III colon cancer?",
-            "Is there a new hypothesis linking treatment and prognosis?",
-            "Can you design a clinical protocol for triple-negative breast cancer?",
-            "Discover novel imaging-genomic signatures predicting resistance to immunotherapy"
-        ]
-    )
+    "Select a question:",
+    [
+        "What biomarkers support diagnosis of triple-negative breast cancer?",
+        "How effective is trastuzumab in early-stage HER2+ patients?",
+        "Discover novel imaging-genomic signatures predicting resistance to immunotherapy"
+    ]
+)
 
     st.session_state["selected_question"] = question
     active_nodes = get_active_nodes(question)
@@ -153,13 +151,14 @@ elif page == "✅ Validation Summary":
 
     question = st.session_state.get("selected_question", "")
     st.markdown(f"### 📌 Question: *{question}*")
-
+    
     agent_outputs = {
-        "Treatment agent": "Adding pertuzumab improves pathological complete response in HER2+ breast cancer.",
-        "Prognostic agent": "Patients with HER2+ tumors show improved survival when treated early.",
-        "Diagnosis agent": "HER2+ subtype is confirmed by overexpression of HER2 protein in immunohistochemistry.",
-        "Guidelines agent": "NCCN recommends trastuzumab and pertuzumab for HER2+ breast cancer treatment.",
-        "Genomic agent": "HER2+ breast cancer is characterized by ERBB2 gene amplification, leading to HER2 protein overexpression."
+        "Diagnosis agent": "Triple-negative breast cancer is typically diagnosed by lack of ER, PR, and HER2 expression in IHC.",
+        "Treatment agent": "Trastuzumab shows high efficacy in improving response rates in early-stage HER2+ patients.",
+        "Prognostic agent": "Early-stage HER2+ breast cancer patients treated with trastuzumab demonstrate improved 5-year survival.",
+        "Genomic agent": "Novel imaging-genomic clusters suggest resistance patterns in immunotherapy non-responders.",
+        "Protocol agent": "Designed protocol integrates imaging-genomic stratification for a prospective immunotherapy trial.",
+        "Graph-researcher agent": "Latent graph embeddings reveal clusters of resistance across imaging and genomic domains."
     }
 
     active_agents = []
