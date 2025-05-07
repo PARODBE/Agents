@@ -12,7 +12,6 @@ agent_images = {
     "Genomic Researcher agent": "https://raw.githubusercontent.com/PARODBE/Agents/main/validation.png"
 }
 
-# Función para mostrar hover tooltips
 def display_image_on_hover(name, image_url, i):
     hover_class = f'hoverable_{i}'
     tooltip_class = f'tooltip_{i}'
@@ -65,7 +64,8 @@ def display_image_on_hover(name, image_url, i):
             <div class="{popup_class}"></div>
         </div>
     '''
-    st.markdown(f"{tooltip_css}{image_hover}", unsafe_allow_html=True)
+    st.markdown(html, unsafe_allow_html=True)
+
 
 # Mostrar cada agente con su imagen
 for i, (agent, url) in enumerate(agent_images.items()):
