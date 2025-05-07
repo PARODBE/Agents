@@ -153,13 +153,18 @@ elif page == "✅ Validation Summary":
     st.markdown(f"### 📌 Question: *{question}*")
     
     agent_outputs = {
-        "Diagnosis agent": "Triple-negative breast cancer is typically diagnosed by lack of ER, PR, and HER2 expression in IHC.",
-        "Treatment agent": "Trastuzumab shows high efficacy in improving response rates in early-stage HER2+ patients.",
-        "Prognostic agent": "Early-stage HER2+ breast cancer patients treated with trastuzumab demonstrate improved 5-year survival.",
-        "Genomic agent": "Novel imaging-genomic clusters suggest resistance patterns in immunotherapy non-responders.",
-        "Protocol agent": "Designed protocol integrates imaging-genomic stratification for a prospective immunotherapy trial.",
-        "Graph-researcher agent": "Latent graph embeddings reveal clusters of resistance across imaging and genomic domains."
-    }
+    "Diagnosis agent": "Triple-negative breast cancer is typically diagnosed by lack of ER, PR, and HER2 expression in IHC.",
+    "Treatment agent": "Trastuzumab shows high efficacy in improving response rates in early-stage HER2+ patients.",
+    "Prognostic agent": "Early-stage HER2+ breast cancer patients treated with trastuzumab demonstrate improved 5-year survival.",
+    "Genomic agent": (
+        "A novel resistance signature was identified, characterized by:\n"
+        "- 🧠 Imaging: Increased peritumoral edema and low radiomic entropy in T2-weighted MRI\n"
+        "- 🧬 Genomics: Co-occurrence of PTEN deletion, low IFNG expression, and MLH1 promoter hypermethylation\n"
+        "\nThese features suggest an immunologically 'cold' tumor phenotype resistant to checkpoint inhibition."
+    ),
+    "Protocol agent": "Designed protocol integrates imaging-genomic stratification for a prospective immunotherapy trial.",
+    "Graph-researcher agent": "Latent graph embeddings reveal clusters of resistance across imaging and genomic domains."
+}
 
     active_agents = []
     if "treatment" in question.lower():
